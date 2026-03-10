@@ -18,3 +18,79 @@
   }
 }
 ```
+
+# Local Milvus
+
+* Prereqs
+
+```bash
+# Install all requirements
+pip install -r requirements-milvus.txt
+
+# Or install individually
+pip install pymilvus sentence-transformers numpy einops
+```
+
+* Start Milvus
+
+```sh
+docker-compose up -d
+```
+
+* Stop Milvus
+
+```sh
+docker-compose down
+```
+
+# Kubernetes Milvus
+
+
+# Ingestion & Validation
+
+## Concatenate all files for a component
+
+```bash
+python 1_concat_markdown.py /<PATH-TO>/moj-frontend/docs/components/alert -o alert-combined.md  --exclude README.md LICENSE.md
+```
+
+For more option see [README-CONCAT_MARKDOWN.md](docs/README-CONCAT_MARKDOWN.md)
+
+## Parse to JSON Format
+
+```bash
+python 2_parse_component_to_json.py date-picker-combined.md -o date-picker-component.json  --pretty
+```
+
+For more option see [README_PARSE_COMPONENT_TO_JSON.md](docs/README_PARSE_COMPONENT_TO_JSON.md)
+
+
+## Insert to Milvus & Search
+
+1. First time, create the `knowledge_base` collection with the proper schema:
+
+```bash
+python 3_insert_to_milvus.py --create
+```
+
+2. To drop and recreate an existing collection:
+
+```bash
+python 3_insert_to_milvus.py --drop --create
+```
+
+3. Insert your parsed component JSON into the collection:
+
+```bash
+python 3_insert_to_milvus.py alert-component.json
+```
+
+4. Perform similarity check
+
+```bash
+python 3_insert_to_milvus.py --search "Do you have a component which can help with dates?"
+```
+
+```bash
+python 3_insert_to_milvus.py --search "Show me components that have research done"
+```
