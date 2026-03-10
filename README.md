@@ -88,9 +88,9 @@ python 3_insert_to_milvus.py alert-component.json
 4. Perform similarity check
 
 ```bash
-python insert_to_milvus.py --search "Do you have a component which can help with dates?"
+python 3_insert_to_milvus.py --search "Do you have a component which can help with dates?"
 ```
 
 ```bash
-python insert_to_milvus.py --search "Show me components that have research done"
+python 3_insert_to_milvus.py --search "Show me components that have research done"
 ```
