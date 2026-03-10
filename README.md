@@ -51,7 +51,7 @@ docker-compose down
 ## Concatenate all files for a component
 
 ```bash
-python 1_cconcat_markdown.py /<PATH-TO>/moj-frontend/docs/components/alert -o alert-combined.md  --exclude README.md LICENSE.md
+python 1_concat_markdown.py /<PATH-TO>/moj-frontend/docs/components/alert -o alert-combined.md  --exclude README.md LICENSE.md
 ```
 
 For more option see [README-CONCAT_MARKDOWN.md](docs/README-CONCAT_MARKDOWN.md)
