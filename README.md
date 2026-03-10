@@ -18,3 +18,19 @@
   }
 }
 ```
+
+# Local Milvus
+
+* Start Milvus
+
+```sh
+docker-compose up -d
+```
+
+* Stop Milvus
+
+```sh
+docker-compose down
+```
+
+# Kubernetes Milvus
