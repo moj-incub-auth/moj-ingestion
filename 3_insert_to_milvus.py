@@ -8,6 +8,7 @@ using Nomic-embed-text-v1.5 embeddings for semantic search.
 
 import argparse
 import json
+import os
 from pathlib import Path
 from typing import List, Dict, Any
 
@@ -316,6 +317,67 @@ Content: {full_content[:65000]}
         print(f"✅ Successfully inserted {len(components)} component(s)")
         return len(components)
 
+    def process_batch(self, input_dir: Path) -> int:
+        """
+        Process all JSON files in a directory and insert into Milvus.
+
+        Args:
+            input_dir: Directory containing JSON files to insert
+
+        Returns:
+            Number of successfully inserted files
+        """
+        print(f"🔄 Batch mode: Processing JSON files in {input_dir}")
+        print()
+
+        # Find all .json files recursively
+        json_files = list(input_dir.rglob("*.json"))
+
+        if not json_files:
+            print(f"❌ No JSON files found in: {input_dir}")
+            return 0
+
+        print(f"📊 Found {len(json_files)} JSON file(s) to insert")
+        print()
+
+        successful = 0
+        failed = 0
+        total_components = 0
+
+        for json_file in sorted(json_files):
+            component_name = json_file.stem.replace('-component', '')
+
+            print(f"Processing: {component_name}")
+            print(f"   File: {json_file.relative_to(input_dir)}")
+
+            try:
+                # Insert from JSON file
+                count = self.insert_from_json(str(json_file))
+                if count > 0:
+                    successful += 1
+                    total_components += count
+                    print(f"   ✅ Success! ({count} component(s) inserted)")
+                else:
+                    failed += 1
+                    print(f"   ❌ Failed!")
+            except Exception as e:
+                failed += 1
+                print(f"   ❌ Error: {e}")
+
+            print()
+
+        # Summary
+        print(f"{'='*60}")
+        print(f"Batch Processing Summary")
+        print(f"{'='*60}")
+        print(f"Total files: {len(json_files)}")
+        print(f"Successful: {successful}")
+        print(f"Failed: {failed}")
+        print(f"Total components inserted: {total_components}")
+        print()
+
+        return successful
+
     def search(self, query: str, limit: int = 5) -> List[Dict[str, Any]]:
         """
         Search for components using semantic search.
@@ -386,7 +448,31 @@ Content: {full_content[:65000]}
 def main():
     """Main execution function."""
     parser = argparse.ArgumentParser(
-        description="Insert component data into Milvus knowledge base"
+        description="Insert component data into Milvus knowledge base",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Environment Variables:
+  MILVUS_HOST            Milvus server host
+  MILVUS_PORT            Milvus server port
+  MILVUS_COLLECTION      Collection name
+  MILVUS_EMBEDDING_MODEL Embedding model name
+
+Examples:
+  # Using environment variables
+  export MILVUS_HOST="localhost"
+  export MILVUS_COLLECTION="knowledge_base"
+  python 3_insert_to_milvus.py component.json
+
+  # Using command line arguments
+  python 3_insert_to_milvus.py component.json --host localhost --collection my_kb
+
+  # Batch mode: insert all JSON files from directory
+  export MD_OUTPUT_DIR="./batch-output"
+  python 3_insert_to_milvus.py --batch
+
+  # Batch mode with custom directory
+  python 3_insert_to_milvus.py --batch --input-dir ./my-components
+        """
     )
 
     parser.add_argument(
@@ -400,21 +486,27 @@ def main():
         "--host",
         type=str,
         default="localhost",
-        help="Milvus server host (default: localhost)"
+        help="Milvus server host (overrides MILVUS_HOST env var, default: localhost)"
     )
 
     parser.add_argument(
         "--port",
         type=str,
         default="19530",
-        help="Milvus server port (default: 19530)"
+        help="Milvus server port (overrides MILVUS_PORT env var, default: 19530)"
     )
 
     parser.add_argument(
         "--collection",
         type=str,
         default="knowledge_base",
-        help="Collection name (default: knowledge_base)"
+        help="Collection name (overrides MILVUS_COLLECTION env var, default: knowledge_base)"
+    )
+
+    parser.add_argument(
+        "--embedding-model",
+        type=str,
+        help="Embedding model name (overrides MILVUS_EMBEDDING_MODEL env var, default: nomic-ai/nomic-embed-text-v1.5)"
     )
 
     parser.add_argument(
@@ -442,16 +534,71 @@ def main():
         help="Number of search results to return (default: 5)"
     )
 
+    parser.add_argument(
+        "--batch",
+        action="store_true",
+        help="Batch mode: process all JSON files in directory"
+    )
+
+    parser.add_argument(
+        "--input-dir",
+        type=str,
+        help="Input directory for batch mode (overrides MD_OUTPUT_DIR env var)"
+    )
+
     args = parser.parse_args()
+
+    # Get configuration from args or environment variables
+    host = args.host if args.host else os.environ.get('MILVUS_HOST', 'localhost')
+    port = args.port if args.port else os.environ.get('MILVUS_PORT', '19530')
+    collection = args.collection if args.collection else os.environ.get('MILVUS_COLLECTION', 'knowledge_base')
+    embedding_model = args.embedding_model if args.embedding_model else os.environ.get('MILVUS_EMBEDDING_MODEL', 'nomic-ai/nomic-embed-text-v1.5')
 
     # Initialize knowledge base
     kb = MilvusKnowledgeBase(
-        collection_name=args.collection,
-        host=args.host,
-        port=args.port
+        collection_name=collection,
+        host=host,
+        port=port,
+        embedding_model=embedding_model
     )
 
     try:
+        # Handle batch mode
+        if args.batch:
+            # Get input directory
+            input_dir_path = args.input_dir if args.input_dir else os.environ.get('MD_OUTPUT_DIR')
+
+            if not input_dir_path:
+                print("❌ Error: No input directory provided for batch mode")
+                print("   Set MD_OUTPUT_DIR environment variable or use --input-dir argument")
+                print("\n   Example:")
+                print("     export MD_OUTPUT_DIR='./batch-output'")
+                print("     python 3_insert_to_milvus.py --batch")
+                print("\n   Or:")
+                print("     python 3_insert_to_milvus.py --batch --input-dir ./batch-output")
+                return
+
+            input_dir = Path(input_dir_path)
+
+            if not input_dir.exists():
+                print(f"❌ Error: Directory does not exist: {input_dir}")
+                return
+
+            if not input_dir.is_dir():
+                print(f"❌ Error: Not a directory: {input_dir}")
+                return
+
+            # Process batch
+            successful = kb.process_batch(input_dir)
+
+            if successful > 0:
+                print(f"🎉 Done! Successfully inserted {successful} file(s)")
+            else:
+                print(f"❌ No files were successfully inserted")
+
+            kb.close()
+            return
+
         # Create collection if requested
         if args.create or args.drop:
             collection = kb.create_collection(drop_existing=args.drop)

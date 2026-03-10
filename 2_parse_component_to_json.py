@@ -8,6 +8,7 @@ and extracts structured information into JSON format.
 
 import argparse
 import json
+import os
 import re
 from pathlib import Path
 from datetime import datetime
@@ -240,28 +241,147 @@ def extract_sections(content: str) -> List[Dict[str, str]]:
     return sections
 
 
+def process_single_file(
+    markdown_file: Path,
+    output_file: Path,
+    pretty: bool = True,
+    indent: int = 2
+) -> bool:
+    """
+    Process a single markdown file and generate JSON.
+
+    Args:
+        markdown_file: Path to markdown file
+        output_file: Path to output JSON file
+        pretty: Whether to pretty-print JSON
+        indent: Indentation level for JSON
+
+    Returns:
+        True if successful, False otherwise
+    """
+    try:
+        # Parse the markdown file
+        result = parse_component_markdown(str(markdown_file))
+
+        # Convert to JSON
+        if pretty:
+            json_output = json.dumps(result, indent=indent, ensure_ascii=False)
+        else:
+            json_output = json.dumps(result, ensure_ascii=False)
+
+        # Write output
+        output_file.write_text(json_output, encoding='utf-8')
+
+        print(f"   ✅ {output_file.name}")
+        return True
+
+    except Exception as e:
+        print(f"   ❌ Error: {e}")
+        return False
+
+
+def process_batch(
+    input_dir: Path,
+    pretty: bool = True,
+    indent: int = 2
+) -> int:
+    """
+    Process all markdown files in a directory structure.
+
+    Args:
+        input_dir: Directory containing component subdirectories with .md files
+        pretty: Whether to pretty-print JSON
+        indent: Indentation level for JSON
+
+    Returns:
+        Number of successfully processed files
+    """
+    print(f"🔄 Batch mode: Processing markdown files in {input_dir}")
+    print()
+
+    # Find all .md files recursively
+    md_files = list(input_dir.rglob("*-combined.md"))
+
+    if not md_files:
+        print(f"❌ No *-combined.md files found in: {input_dir}")
+        return 0
+
+    print(f"📊 Found {len(md_files)} markdown file(s) to process")
+    print()
+
+    successful = 0
+    failed = 0
+
+    for md_file in sorted(md_files):
+        # Generate output filename (same name, .json extension)
+        json_file = md_file.with_suffix('.json')
+
+        component_name = md_file.stem.replace('-combined', '')
+
+        print(f"Processing: {component_name}")
+        print(f"   Input:  {md_file.relative_to(input_dir)}")
+        print(f"   Output: {json_file.relative_to(input_dir)}")
+
+        # Process the file
+        if process_single_file(md_file, json_file, pretty, indent):
+            successful += 1
+        else:
+            failed += 1
+
+        print()
+
+    # Summary
+    print(f"{'='*60}")
+    print(f"Batch Processing Summary")
+    print(f"{'='*60}")
+    print(f"Total files: {len(md_files)}")
+    print(f"Successful: {successful}")
+    print(f"Failed: {failed}")
+    print()
+
+    return successful
+
+
 def main():
     """Main execution function."""
     parser = argparse.ArgumentParser(
-        description="Parse MOJ component markdown files and extract structured JSON data"
+        description="Parse MOJ component markdown files and extract structured JSON data",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Environment Variables:
+  MD_OUTPUT_DIR     Directory containing markdown files (batch mode)
+
+Examples:
+  # Single file mode
+  python 2_parse_component_to_json.py alert-combined.md -o alert.json --pretty
+
+  # Batch mode: process all *-combined.md files in directory
+  python 2_parse_component_to_json.py --batch --input-dir ./batch-output
+
+  # Batch mode with environment variable
+  export MD_OUTPUT_DIR="./batch-output"
+  python 2_parse_component_to_json.py --batch
+        """
     )
 
     parser.add_argument(
         "markdown_file",
         type=str,
-        help="Path to the concatenated markdown file"
+        nargs="?",
+        help="Path to the concatenated markdown file (single mode)"
     )
 
     parser.add_argument(
         "-o", "--output",
         type=str,
-        help="Output JSON file path (default: print to stdout)"
+        help="Output JSON file path (single mode, default: print to stdout)"
     )
 
     parser.add_argument(
         "--pretty",
         action="store_true",
-        help="Pretty-print the JSON output"
+        default=True,
+        help="Pretty-print the JSON output (default: True)"
     )
 
     parser.add_argument(
@@ -271,44 +391,101 @@ def main():
         help="JSON indentation level (default: 2)"
     )
 
+    parser.add_argument(
+        "--batch",
+        action="store_true",
+        help="Batch mode: process all *-combined.md files in directory"
+    )
+
+    parser.add_argument(
+        "--input-dir",
+        type=str,
+        help="Input directory for batch mode (overrides MD_OUTPUT_DIR env var)"
+    )
+
     args = parser.parse_args()
 
-    # Validate input file
-    if not Path(args.markdown_file).exists():
-        print(f"❌ Error: File not found: {args.markdown_file}")
-        return
+    # Handle batch mode
+    if args.batch:
+        # Get input directory
+        input_dir_path = args.input_dir
 
-    print(f"📄 Parsing markdown file: {args.markdown_file}")
+        if not input_dir_path:
+            # Try environment variable
+            input_dir_path = os.environ.get('MD_OUTPUT_DIR')
 
-    # Parse the markdown file
-    result = parse_component_markdown(args.markdown_file)
+        if not input_dir_path:
+            print("❌ Error: No input directory provided for batch mode")
+            print("   Set MD_OUTPUT_DIR environment variable or use --input-dir argument")
+            print("\n   Example:")
+            print("     export MD_OUTPUT_DIR='./batch-output'")
+            print("     python 2_parse_component_to_json.py --batch")
+            print("\n   Or:")
+            print("     python 2_parse_component_to_json.py --batch --input-dir ./batch-output")
+            return
 
-    # Convert to JSON
-    if args.pretty:
-        json_output = json.dumps(result, indent=args.indent, ensure_ascii=False)
+        input_dir = Path(input_dir_path)
+
+        if not input_dir.exists():
+            print(f"❌ Error: Directory does not exist: {input_dir}")
+            return
+
+        if not input_dir.is_dir():
+            print(f"❌ Error: Not a directory: {input_dir}")
+            return
+
+        # Process in batch mode
+        successful = process_batch(
+            input_dir=input_dir,
+            pretty=args.pretty,
+            indent=args.indent
+        )
+
+        if successful > 0:
+            print(f"🎉 Done! Successfully processed {successful} file(s)")
+        else:
+            print(f"❌ No files were successfully processed")
+
     else:
-        json_output = json.dumps(result, ensure_ascii=False)
+        # Single file mode
+        if not args.markdown_file:
+            print("❌ Error: No markdown file provided")
+            print("   Provide a file path or use --batch mode")
+            print("\n   Example:")
+            print("     python 2_parse_component_to_json.py alert-combined.md -o alert.json")
+            return
 
-    # Output
-    if args.output:
-        output_path = Path(args.output)
-        output_path.write_text(json_output, encoding='utf-8')
-        print(f"✅ JSON output written to: {args.output}")
-#        print(f"📊 Component: {result['components'][0]['title']}")
-#        print(f"📝 Description: {result['components'][0]['description'][:80]}...")
-#        print(f"🔗 URL: {result['components'][0]['url']}")
-        print(f"📊 Component: {result['component']['title']}")
-        print(f"📝 Description: {result['component']['description'][:80]}...")
-        print(f"🔗 URL: {result['component']['url']}")
+        # Validate input file
+        if not Path(args.markdown_file).exists():
+            print(f"❌ Error: File not found: {args.markdown_file}")
+            return
 
-    else:
-        print("\n" + "="*80)
-        print("JSON OUTPUT:")
-        print("="*80)
-        print(json_output)
+        print(f"📄 Parsing markdown file: {args.markdown_file}")
 
-#    print(f"\n✅ Successfully parsed component: {result['components'][0]['title']}")
-    print(f"\n✅ Successfully parsed component: {result['component']['title']}")
+        # Parse the markdown file
+        result = parse_component_markdown(args.markdown_file)
+
+        # Convert to JSON
+        if args.pretty:
+            json_output = json.dumps(result, indent=args.indent, ensure_ascii=False)
+        else:
+            json_output = json.dumps(result, ensure_ascii=False)
+
+        # Output
+        if args.output:
+            output_path = Path(args.output)
+            output_path.write_text(json_output, encoding='utf-8')
+            print(f"✅ JSON output written to: {args.output}")
+            print(f"📊 Component: {result['component']['title']}")
+            print(f"📝 Description: {result['component']['description'][:80]}...")
+            print(f"🔗 URL: {result['component']['url']}")
+        else:
+            print("\n" + "="*80)
+            print("JSON OUTPUT:")
+            print("="*80)
+            print(json_output)
+
+        print(f"\n✅ Successfully parsed component: {result['component']['title']}")
 
 
 if __name__ == "__main__":
