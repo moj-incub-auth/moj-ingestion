@@ -10,7 +10,6 @@ import argparse
 import json
 from pathlib import Path
 from typing import List, Dict, Any
-import sys
 
 # PyMilvus imports
 from pymilvus import (
@@ -108,7 +107,7 @@ class MilvusKnowledgeBase:
             FieldSchema(
                 name="description",
                 dtype=DataType.VARCHAR,
-                max_length=2048,
+                max_length=4096,
                 description="Component description"
             ),
             FieldSchema(
@@ -130,12 +129,6 @@ class MilvusKnowledgeBase:
                 description="Accessibility level (e.g., AA)"
             ),
             FieldSchema(
-                name="status",
-                dtype=DataType.VARCHAR,
-                max_length=128,
-                description="Component status"
-            ),
-            FieldSchema(
                 name="has_research",
                 dtype=DataType.BOOL,
                 description="Whether component has research"
@@ -153,6 +146,11 @@ class MilvusKnowledgeBase:
                 description="Update timestamp"
             ),
             FieldSchema(
+                name="views",
+                dtype=DataType.INT16,
+                description="views"
+            ),
+            FieldSchema(
                 name="content_embedding",
                 dtype=DataType.FLOAT_VECTOR,
                 dim=self.embedding_dim,
@@ -168,7 +166,7 @@ class MilvusKnowledgeBase:
 
         schema = CollectionSchema(
             fields=fields,
-            description="Knowledge base for design system components"
+            description="Knowledge base for design system component"
         )
 
         # Create collection
@@ -232,7 +230,7 @@ class MilvusKnowledgeBase:
 Title: {component['title']}
 Description: {component['description']}
 Parent: {component['parent']}
-Content: {full_content[:5000]}
+Content: {full_content[:65000]}
         """.strip()
 
         print(f"   Generating embedding for: {component['title']}")
@@ -242,14 +240,15 @@ Content: {full_content[:5000]}
         data = {
             "component_id": component['url'],  # Use URL as unique ID
             "title": component['title'],
-            "description": component['description'][:2048],  # Truncate if needed
+            "description": component['description'][:4096],  # Truncate if needed
             "url": component['url'],
             "parent": component['parent'],
             "accessibility": component['accessibility'],
-            "status": component.get('status', 'Unknown'),
+           # "status": component.get('status', 'Unknown'),
             "has_research": component['has_research'],
             "created_at": component['created_at'],
             "updated_at": component['updated_at'],
+            "views": component['views'],
             "content_embedding": embedding,
             "full_content": full_content[:65535]  # Truncate to max VARCHAR length
         }
@@ -271,7 +270,22 @@ Content: {full_content[:5000]}
         with open(json_file, 'r', encoding='utf-8') as f:
             data = json.load(f)
 
-        components = data.get('components', [])
+        # Handle both 'component' (singular) and 'components' (plural) keys
+        if 'component' in data:
+            component = data['component']
+            if not isinstance(component, dict):
+                print("❌ Component data should be a dictionary")
+                return 0
+            components = [component]  # Convert to list for uniform handling
+        elif 'components' in data:
+            components = data['components']
+            if not isinstance(components, list):
+                print("❌ Components data should be a list")
+                return 0
+        else:
+            print("❌ No 'component' or 'components' key found in JSON file")
+            return 0
+
         full_content = data.get('filecontent', '')
 
         if not components:
@@ -289,25 +303,12 @@ Content: {full_content[:5000]}
             prepared_data = self.prepare_component_data(component, full_content)
             insert_data.append(prepared_data)
 
-        # Convert to column-oriented format for Milvus
-        columns = {
-            "component_id": [d["component_id"] for d in insert_data],
-            "title": [d["title"] for d in insert_data],
-            "description": [d["description"] for d in insert_data],
-            "url": [d["url"] for d in insert_data],
-            "parent": [d["parent"] for d in insert_data],
-            "accessibility": [d["accessibility"] for d in insert_data],
-            "status": [d["status"] for d in insert_data],
-            "has_research": [d["has_research"] for d in insert_data],
-            "created_at": [d["created_at"] for d in insert_data],
-            "updated_at": [d["updated_at"] for d in insert_data],
-            "content_embedding": [d["content_embedding"] for d in insert_data],
-            "full_content": [d["full_content"] for d in insert_data]
-        }
+        print(f"✅ Prepared {len(insert_data)} component(s) for insertion")
 
-        # Insert data
-        print("💾 Inserting data into Milvus...")
-        collection.insert(columns)
+        # Insert data using row-based format (list of dicts)
+        # PyMilvus expects each row as a dictionary
+        print("\n💾 Inserting data into Milvus...")
+        collection.insert(insert_data)
 
         # Flush to ensure data is written
         collection.flush()
@@ -353,7 +354,8 @@ Content: {full_content[:5000]}
                 "url",
                 "parent",
                 "accessibility",
-                "status"
+                "has_research",
+                "views"
             ]
         )
 
@@ -368,7 +370,8 @@ Content: {full_content[:5000]}
                     "url": hit.entity.get("url"),
                     "parent": hit.entity.get("parent"),
                     "accessibility": hit.entity.get("accessibility"),
-                    "status": hit.entity.get("status")
+                    "has_research": hit.entity.get("has_research"),
+                    "views": hit.entity.get("views")
                 }
                 formatted_results.append(result)
 
@@ -476,7 +479,9 @@ def main():
                 print(f"  Description: {result['description'][:100]}...")
                 print(f"  URL: {result['url']}")
                 print(f"  Parent: {result['parent']}")
-                print(f"  Status: {result['status']}")
+                print(f"  Accessibility: {result['accessibility']}")
+                print(f"  Has Research: {result['has_research']}")
+                print(f"  Views: {result['views']}")
                 print()
 
         # Show collection stats
