@@ -59,7 +59,7 @@ For more option see [README-CONCAT_MARKDOWN.md](docs/README-CONCAT_MARKDOWN.md)
 ## Parse to JSON Format
 
 ```bash
-python parse_component_to_json.py date-picker-combined.md -o date-picker-component.json  --pretty
+python 2_parse_component_to_json.py date-picker-combined.md -o date-picker-component.json  --pretty
 ```
 
 For more option see [README_PARSE_COMPONENT_TO_JSON.md](docs/README_PARSE_COMPONENT_TO_JSON.md)
