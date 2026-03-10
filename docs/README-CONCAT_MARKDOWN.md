@@ -3,13 +3,13 @@ Perfect! I've created 1_concat_markdown.py - a script that will read all markdow
   Basic Usage
                                                                                                                                                                                                                  
   # Concatenate all .md files in current directory
-  python 1_concat_markdown.py . -o combined.md                                                                                                                                                                     
+  uv run 1_concat_markdown.py . -o combined.md                                                                                                                                                                     
                                                             
   # Concatenate files from a specific folder
-  python 1_concat_markdown.py ./docs -o all_docs.md
+  uv run 1_concat_markdown.py ./docs -o all_docs.md
 
   # Recursively search subdirectories
-  python 1_concat_markdown.py ./docs -o all_docs.md --recursive
+  uv run 1_concat_markdown.py ./docs -o all_docs.md --recursive
 
   Features
 
@@ -23,10 +23,10 @@ Perfect! I've created 1_concat_markdown.py - a script that will read all markdow
   Example with Options
 
   # Simple concatenation without headers or separators
-  python 1_concat_markdown.py ./notes -o notes.md --no-separators --no-filenames
+  uv run 1_concat_markdown.py ./notes -o notes.md --no-separators --no-filenames
 
   # Recursive search, excluding certain files
-  python 1_concat_markdown.py ./docs -o docs.md --recursive --exclude README.md LICENSE.md
+  uv run 1_concat_markdown.py ./docs -o docs.md --recursive --exclude README.md LICENSE.md
 
   Output Format (default)
 

@@ -15,13 +15,7 @@ This script enables semantic search over design system components by:
 ### 1. Install Dependencies
 
 ```bash
-pip install -r requirements-milvus.txt
-```
-
-Or install individually:
-
-```bash
-pip install pymilvus sentence-transformers numpy
+uv sync
 ```
 
 ### 2. Run Milvus Server
@@ -47,7 +41,8 @@ helm install milvus milvus/milvus
 #### Option C: Milvus Lite (Development)
 
 ```bash
-pip install milvus
+uv tool install milvus
+uv run milvus-server
 # Runs embedded Milvus - no separate server needed
 ```
 
@@ -58,13 +53,13 @@ pip install milvus
 First, create the `knowledge_base` collection with the proper schema:
 
 ```bash
-python 3_insert_to_milvus.py --create
+uv run 3_insert_to_milvus.py --create
 ```
 
 To drop and recreate an existing collection:
 
 ```bash
-python 3_insert_to_milvus.py --drop --create
+uv run 3_insert_to_milvus.py --drop --create
 ```
 
 ### Step 2: Insert Component Data
@@ -72,7 +67,7 @@ python 3_insert_to_milvus.py --drop --create
 Insert your parsed component JSON into the collection:
 
 ```bash
-python 3_insert_to_milvus.py alert-component.json
+uv run 3_insert_to_milvus.py alert-component.json
 ```
 
 ### Step 3: Search the Knowledge Base
@@ -80,23 +75,23 @@ python 3_insert_to_milvus.py alert-component.json
 Search for components using natural language queries:
 
 ```bash
-python 3_insert_to_milvus.py --search "alert component for errors" --limit 3
+uv run 3_insert_to_milvus.py --search "alert component for errors" --limit 3
 ```
 
 ### Complete Workflow Example
 
 ```bash
 # 1. Parse markdown to JSON
-python 2_parse_component_to_json.py alert-combined.md -o alert-component.json --pretty
+uv run 2_parse_component_to_json.py alert-combined.md -o alert-component.json --pretty
 
 # 2. Create Milvus collection
-python 3_insert_to_milvus.py --create
+uv run 3_insert_to_milvus.py --create
 
 # 3. Insert data
-python 3_insert_to_milvus.py alert-component.json
+uv run 3_insert_to_milvus.py alert-component.json
 
 # 4. Search
-python 3_insert_to_milvus.py --search "How do I show success messages?"
+uv run 3_insert_to_milvus.py --search "How do I show success messages?"
 ```
 
 ## Command Line Options
@@ -139,15 +134,15 @@ Process and insert multiple components:
 ```bash
 # Parse all components
 for file in *.md; do
-    python 2_parse_component_to_json.py "$file" -o "${file%.md}.json" --pretty
+    uv run 2_parse_component_to_json.py "$file" -o "${file%.md}.json" --pretty
 done
 
 # Create collection once
-python 3_insert_to_milvus.py --create
+uv run 3_insert_to_milvus.py --create
 
 # Insert all components
 for json_file in *-component.json; do
-    python 3_insert_to_milvus.py "$json_file"
+    uv run 3_insert_to_milvus.py "$json_file"
 done
 ```
 
@@ -158,7 +153,7 @@ Or use a simple batch script:
 # batch_insert.sh
 
 # Create collection
-python 3_insert_to_milvus.py --drop --create
+uv run 3_insert_to_milvus.py --drop --create
 
 # Process and insert all component files
 for md_file in *-combined.md; do
@@ -166,10 +161,10 @@ for md_file in *-combined.md; do
     echo "Processing $component_name..."
 
     # Parse to JSON
-    python 2_parse_component_to_json.py "$md_file" -o "${component_name}.json" --pretty
+    uv run 2_parse_component_to_json.py "$md_file" -o "${component_name}.json" --pretty
 
     # Insert to Milvus
-    python 3_insert_to_milvus.py "${component_name}.json"
+    uv run 3_insert_to_milvus.py "${component_name}.json"
 done
 
 echo "All components inserted!"
@@ -180,19 +175,19 @@ echo "All components inserted!"
 ### Basic Search
 
 ```bash
-python 3_insert_to_milvus.py --search "error alert"
+uv run 3_insert_to_milvus.py --search "error alert"
 ```
 
 ### Specific Use Case
 
 ```bash
-python 3_insert_to_milvus.py --search "How do I show a warning to users?"
+uv run 3_insert_to_milvus.py --search "How do I show a warning to users?"
 ```
 
 ### Multiple Results
 
 ```bash
-python 3_insert_to_milvus.py --search "dismissible notification" --limit 10
+uv run 3_insert_to_milvus.py --search "dismissible notification" --limit 10
 ```
 
 ## Advanced Usage
@@ -200,7 +195,7 @@ python 3_insert_to_milvus.py --search "dismissible notification" --limit 10
 ### Connecting to Remote Milvus
 
 ```bash
-python 3_insert_to_milvus.py alert-component.json \
+uv run 3_insert_to_milvus.py alert-component.json \
     --host milvus.example.com \
     --port 19530 \
     --collection production_kb
@@ -209,8 +204,8 @@ python 3_insert_to_milvus.py alert-component.json \
 ### Using Custom Collection Name
 
 ```bash
-python 3_insert_to_milvus.py --create --collection moj_components
-python 3_insert_to_milvus.py alert-component.json --collection moj_components
+uv run 3_insert_to_milvus.py --create --collection moj_components
+uv run 3_insert_to_milvus.py alert-component.json --collection moj_components
 ```
 
 ## Python API Usage
@@ -311,7 +306,7 @@ Error: vector dimension mismatch
 
 **Solution**: Drop and recreate the collection:
 ```bash
-python 3_insert_to_milvus.py --drop --create
+uv run 3_insert_to_milvus.py --drop --create
 ```
 
 ### Out of Memory
@@ -330,7 +325,7 @@ Error: Out of memory
 ### Check Collection Stats
 
 ```bash
-python 3_insert_to_milvus.py --search "test" --limit 1
+uv run 3_insert_to_milvus.py --search "test" --limit 1
 # Shows entity count at the end
 ```
 
@@ -351,7 +346,7 @@ docker run -p 8000:3000 -e MILVUS_URL=milvus:19530 zilliz/attu:latest
 ## Example Output
 
 ```bash
-$ python 3_insert_to_milvus.py --search "How to show warnings?"
+$ uv run 3_insert_to_milvus.py --search "How to show warnings?"
 
 🔍 Searching for: 'How to show warnings?'
 ================================================================================

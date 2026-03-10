@@ -8,10 +8,7 @@ Complete workflow for ingesting MOJ component documentation into Milvus vector d
 
 ```bash
 # Install all requirements
-pip install -r requirements-milvus.txt
-
-# Or install individually
-pip install pymilvus sentence-transformers numpy einops
+uv sync
 ```
 
 ### 2. Start Milvus Server
@@ -33,12 +30,12 @@ If you have multiple markdown files for a component in separate directories:
 
 ```bash
 # Concatenate all .md files from a component directory
-python 1_concat_markdown.py /path/to/component/docs -o alert-combined.md --recursive
+uv run 1_concat_markdown.py /path/to/component/docs -o alert-combined.md --recursive
 ```
 
 Example:
 ```bash
-python 1_concat_markdown.py \
+uv run 1_concat_markdown.py \
     /home/stkousso/Stelios/Projects/2026/0018-MoJ/customer-resources/data/moj-frontend/docs/components/alert \
     -o alert-combined.md \
     --recursive
@@ -49,7 +46,7 @@ python 1_concat_markdown.py \
 Convert the concatenated markdown to structured JSON:
 
 ```bash
-python 2_parse_component_to_json.py alert-combined.md -o alert-component.json --pretty
+uv run 2_parse_component_to_json.py alert-combined.md -o alert-component.json --pretty
 ```
 
 This creates a JSON file with:
@@ -62,13 +59,13 @@ This creates a JSON file with:
 Create the `knowledge_base` collection (only needed once):
 
 ```bash
-python 3_insert_to_milvus.py --create
+uv run 3_insert_to_milvus.py --create
 ```
 
 Or drop existing and recreate:
 
 ```bash
-python 3_insert_to_milvus.py --drop --create
+uv run 3_insert_to_milvus.py --drop --create
 ```
 
 ### Step 4: Insert Data
@@ -76,7 +73,7 @@ python 3_insert_to_milvus.py --drop --create
 Insert your component into the knowledge base:
 
 ```bash
-python 3_insert_to_milvus.py alert-component.json
+uv run 3_insert_to_milvus.py alert-component.json
 ```
 
 ### Step 5: Search
@@ -84,26 +81,26 @@ python 3_insert_to_milvus.py alert-component.json
 Search the knowledge base using natural language:
 
 ```bash
-python 3_insert_to_milvus.py --search "How do I show error messages?"
+uv run 3_insert_to_milvus.py --search "How do I show error messages?"
 ```
 
 ## Complete Example
 
 ```bash
 # 1. Concatenate component docs
-python 1_concat_markdown.py ./docs/components/alert -o alert-combined.md --recursive
+uv run 1_concat_markdown.py ./docs/components/alert -o alert-combined.md --recursive
 
 # 2. Parse to JSON
-python 2_parse_component_to_json.py alert-combined.md -o alert-component.json --pretty
+uv run 2_parse_component_to_json.py alert-combined.md -o alert-component.json --pretty
 
 # 3. Create collection (first time only)
-python 3_insert_to_milvus.py --create
+uv run 3_insert_to_milvus.py --create
 
 # 4. Insert component
-python 3_insert_to_milvus.py alert-component.json
+uv run 3_insert_to_milvus.py alert-component.json
 
 # 5. Search
-python 3_insert_to_milvus.py --search "dismissible alerts"
+uv run 3_insert_to_milvus.py --search "dismissible alerts"
 ```
 
 ## Batch Processing
@@ -150,7 +147,7 @@ After inserting data, verify it works:
 
 ```bash
 # Search for something specific
-python 3_insert_to_milvus.py --search "warning messages" --limit 3
+uv run 3_insert_to_milvus.py --search "warning messages" --limit 3
 
 # You should see results with similarity scores
 ```
@@ -193,7 +190,7 @@ The first run downloads Nomic-embed-text-v1.5 (~1GB). Ensure:
 If you modified the schema and get errors:
 ```bash
 # Drop and recreate collection
-python 3_insert_to_milvus.py --drop --create
+uv run 3_insert_to_milvus.py --drop --create
 ```
 
 ## Next Steps
@@ -207,16 +204,16 @@ python 3_insert_to_milvus.py --drop --create
 
 ```bash
 # Use case questions
-python 3_insert_to_milvus.py --search "When should I use this component?"
+uv run 3_insert_to_milvus.py --search "When should I use this component?"
 
 # Specific features
-python 3_insert_to_milvus.py --search "dismissible notifications"
+uv run 3_insert_to_milvus.py --search "dismissible notifications"
 
 # Accessibility
-python 3_insert_to_milvus.py --search "screen reader support"
+uv run 3_insert_to_milvus.py --search "screen reader support"
 
 # Examples
-python 3_insert_to_milvus.py --search "show me examples"
+uv run 3_insert_to_milvus.py --search "show me examples"
 ```
 
 ## Files Overview

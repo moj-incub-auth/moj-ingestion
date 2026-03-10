@@ -16,13 +16,7 @@ A Python script that ingests markdown files using Docling, vectorizes the conten
 ### 1. Install Dependencies
 
 ```bash
-pip install -r requirements.txt
-```
-
-Or install individually:
-
-```bash
-pip install docling langchain langchain-community faiss-cpu sentence-transformers
+uv sync
 ```
 
 ### 2. Make Script Executable (Optional)
@@ -38,13 +32,13 @@ chmod +x markdown_vectorizer.py
 Ingest a markdown file and query it:
 
 ```bash
-python markdown_vectorizer.py sample.md --query "What is machine learning?"
+uv run markdown_vectorizer.py sample.md --query "What is machine learning?"
 ```
 
 ### With Custom Parameters
 
 ```bash
-python markdown_vectorizer.py sample.md \
+uv run markdown_vectorizer.py sample.md \
     --query "Tell me about NLP" \
     --num-results 5 \
     --chunk-size 500 \
@@ -55,12 +49,12 @@ python markdown_vectorizer.py sample.md \
 
 ```bash
 # Create and save vector store
-python markdown_vectorizer.py sample.md \
+uv run markdown_vectorizer.py sample.md \
     --query "What are embeddings?" \
     --save ./vector_db
 
 # Load previously saved vector store
-python markdown_vectorizer.py sample.md \
+uv run markdown_vectorizer.py sample.md \
     --load ./vector_db \
     --query "What is supervised learning?"
 ```
@@ -80,7 +74,7 @@ python markdown_vectorizer.py sample.md \
 ## Example Session
 
 ```bash
-$ python markdown_vectorizer.py sample.md --query "What is reinforcement learning?"
+$ uv run markdown_vectorizer.py sample.md --query "What is reinforcement learning?"
 
 📄 Ingesting markdown file: sample.md
 ✅ Successfully ingested 2847 characters
@@ -164,7 +158,7 @@ result = qa_chain.run("What is machine learning?")
 
 If you get import errors, ensure all dependencies are installed:
 ```bash
-pip install --upgrade docling langchain langchain-community faiss-cpu sentence-transformers
+uv sync
 ```
 
 ### FAISS Installation Issues
@@ -182,7 +176,7 @@ pip install faiss-gpu
 
 For large markdown files, reduce chunk size or process in batches:
 ```bash
-python markdown_vectorizer.py large_file.md --chunk-size 500
+uv run markdown_vectorizer.py large_file.md --chunk-size 500
 ```
 
 ## License
