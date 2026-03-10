@@ -33,12 +33,12 @@ If you have multiple markdown files for a component in separate directories:
 
 ```bash
 # Concatenate all .md files from a component directory
-python concat_markdown.py /path/to/component/docs -o alert-combined.md --recursive
+python 1_concat_markdown.py /path/to/component/docs -o alert-combined.md --recursive
 ```
 
 Example:
 ```bash
-python concat_markdown.py \
+python 1_concat_markdown.py \
     /home/stkousso/Stelios/Projects/2026/0018-MoJ/customer-resources/data/moj-frontend/docs/components/alert \
     -o alert-combined.md \
     --recursive
@@ -49,7 +49,7 @@ python concat_markdown.py \
 Convert the concatenated markdown to structured JSON:
 
 ```bash
-python parse_component_to_json.py alert-combined.md -o alert-component.json --pretty
+python 2_parse_component_to_json.py alert-combined.md -o alert-component.json --pretty
 ```
 
 This creates a JSON file with:
@@ -62,13 +62,13 @@ This creates a JSON file with:
 Create the `knowledge_base` collection (only needed once):
 
 ```bash
-python insert_to_milvus.py --create
+python 3_insert_to_milvus.py --create
 ```
 
 Or drop existing and recreate:
 
 ```bash
-python insert_to_milvus.py --drop --create
+python 3_insert_to_milvus.py --drop --create
 ```
 
 ### Step 4: Insert Data
@@ -76,7 +76,7 @@ python insert_to_milvus.py --drop --create
 Insert your component into the knowledge base:
 
 ```bash
-python insert_to_milvus.py alert-component.json
+python 3_insert_to_milvus.py alert-component.json
 ```
 
 ### Step 5: Search
@@ -84,26 +84,26 @@ python insert_to_milvus.py alert-component.json
 Search the knowledge base using natural language:
 
 ```bash
-python insert_to_milvus.py --search "How do I show error messages?"
+python 3_insert_to_milvus.py --search "How do I show error messages?"
 ```
 
 ## Complete Example
 
 ```bash
 # 1. Concatenate component docs
-python concat_markdown.py ./docs/components/alert -o alert-combined.md --recursive
+python 1_concat_markdown.py ./docs/components/alert -o alert-combined.md --recursive
 
 # 2. Parse to JSON
-python parse_component_to_json.py alert-combined.md -o alert-component.json --pretty
+python 2_parse_component_to_json.py alert-combined.md -o alert-component.json --pretty
 
 # 3. Create collection (first time only)
-python insert_to_milvus.py --create
+python 3_insert_to_milvus.py --create
 
 # 4. Insert component
-python insert_to_milvus.py alert-component.json
+python 3_insert_to_milvus.py alert-component.json
 
 # 5. Search
-python insert_to_milvus.py --search "dismissible alerts"
+python 3_insert_to_milvus.py --search "dismissible alerts"
 ```
 
 ## Batch Processing
@@ -150,7 +150,7 @@ After inserting data, verify it works:
 
 ```bash
 # Search for something specific
-python insert_to_milvus.py --search "warning messages" --limit 3
+python 3_insert_to_milvus.py --search "warning messages" --limit 3
 
 # You should see results with similarity scores
 ```
@@ -193,7 +193,7 @@ The first run downloads Nomic-embed-text-v1.5 (~1GB). Ensure:
 If you modified the schema and get errors:
 ```bash
 # Drop and recreate collection
-python insert_to_milvus.py --drop --create
+python 3_insert_to_milvus.py --drop --create
 ```
 
 ## Next Steps
@@ -207,23 +207,23 @@ python insert_to_milvus.py --drop --create
 
 ```bash
 # Use case questions
-python insert_to_milvus.py --search "When should I use this component?"
+python 3_insert_to_milvus.py --search "When should I use this component?"
 
 # Specific features
-python insert_to_milvus.py --search "dismissible notifications"
+python 3_insert_to_milvus.py --search "dismissible notifications"
 
 # Accessibility
-python insert_to_milvus.py --search "screen reader support"
+python 3_insert_to_milvus.py --search "screen reader support"
 
 # Examples
-python insert_to_milvus.py --search "show me examples"
+python 3_insert_to_milvus.py --search "show me examples"
 ```
 
 ## Files Overview
 
-- `concat_markdown.py` - Combines multiple .md files
-- `parse_component_to_json.py` - Extracts structured JSON
-- `insert_to_milvus.py` - Main Milvus integration script
+- `1_concat_markdown.py` - Combines multiple .md files
+- `2_parse_component_to_json.py` - Extracts structured JSON
+- `3_insert_to_milvus.py` - Main Milvus integration script
 - `batch_insert.sh` - Batch process multiple components
 - `requirements-milvus.txt` - Python dependencies
 

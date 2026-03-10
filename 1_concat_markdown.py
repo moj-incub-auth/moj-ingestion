@@ -89,16 +89,16 @@ def main():
         epilog="""
 Examples:
   # Concatenate all .md files in current directory
-  python concat_markdown.py . -o combined.md
+  python 1_concat_markdown.py . -o combined.md
 
   # Recursively search subdirectories
-  python concat_markdown.py ./docs -o all_docs.md --recursive
+  python 1_concat_markdown.py ./docs -o all_docs.md --recursive
 
   # No separators or filenames
-  python concat_markdown.py ./notes -o notes.md --no-separators --no-filenames
+  python 1_concat_markdown.py ./notes -o notes.md --no-separators --no-filenames
 
   # Specify custom output location
-  python concat_markdown.py ./input -o /tmp/output.md
+  python 1_concat_markdown.py ./input -o /tmp/output.md
         """
     )
 

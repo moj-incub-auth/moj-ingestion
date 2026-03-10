@@ -1,15 +1,15 @@
-Perfect! I've created concat_markdown.py - a script that will read all markdown files in a folder and concatenate them. Here's how to use it:
+Perfect! I've created 1_concat_markdown.py - a script that will read all markdown files in a folder and concatenate them. Here's how to use it:
                                                                                            
   Basic Usage
                                                                                                                                                                                                                  
   # Concatenate all .md files in current directory
-  python concat_markdown.py . -o combined.md                                                                                                                                                                     
+  python 1_concat_markdown.py . -o combined.md                                                                                                                                                                     
                                                             
   # Concatenate files from a specific folder
-  python concat_markdown.py ./docs -o all_docs.md
+  python 1_concat_markdown.py ./docs -o all_docs.md
 
   # Recursively search subdirectories
-  python concat_markdown.py ./docs -o all_docs.md --recursive
+  python 1_concat_markdown.py ./docs -o all_docs.md --recursive
 
   Features
 
@@ -23,10 +23,10 @@ Perfect! I've created concat_markdown.py - a script that will read all markdown 
   Example with Options
 
   # Simple concatenation without headers or separators
-  python concat_markdown.py ./notes -o notes.md --no-separators --no-filenames
+  python 1_concat_markdown.py ./notes -o notes.md --no-separators --no-filenames
 
   # Recursive search, excluding certain files
-  python concat_markdown.py ./docs -o docs.md --recursive --exclude README.md LICENSE.md
+  python 1_concat_markdown.py ./docs -o docs.md --recursive --exclude README.md LICENSE.md
 
   Output Format (default)
 

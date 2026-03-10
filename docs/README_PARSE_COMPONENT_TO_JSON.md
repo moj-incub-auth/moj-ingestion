@@ -1,4 +1,4 @@
-python parse_component_to_json.py alert-combined.md -o alert-component.json --pretty
+python 2_parse_component_to_json.py alert-combined.md -o alert-component.json --pretty
 
  Let me also show you just the component metadata (without the full file content) for easier viewing:                                                                   
                                                                                                                                                                                                                  
@@ -34,19 +34,19 @@ python parse_component_to_json.py alert-combined.md -o alert-component.json --pr
 
   📄 Files Created:
 
-  1. parse_component_to_json.py - The parser script
+  1. 2_parse_component_to_json.py - The parser script
   2. alert-component.json - The generated JSON output
 
   🚀 Usage:
 
   # Basic usage
-  python parse_component_to_json.py alert-combined.md -o alert-component.json --pretty
+  python 2_parse_component_to_json.py alert-combined.md -o alert-component.json --pretty
 
   # Or output to stdout
-  python parse_component_to_json.py alert-combined.md --pretty
+  python 2_parse_component_to_json.py alert-combined.md --pretty
 
   # Process other component files
-  python parse_component_to_json.py button-combined.md -o button-component.json --pretty
+  python 2_parse_component_to_json.py button-combined.md -o button-component.json --pretty
 
   The script automatically:
   - Extracts frontmatter metadata
