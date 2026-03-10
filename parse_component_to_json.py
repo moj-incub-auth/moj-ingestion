@@ -146,15 +146,18 @@ def extract_dates(frontmatter: Dict[str, Any]) -> tuple:
 
 def has_research_content(content: str) -> bool:
     """Check if the component documentation includes research."""
-    research_keywords = [
-        'research',
-        'user testing',
-        'user research',
-        'tested with',
-        'feedback from users',
-        'case study',
-        'Examples'
+    research_keywords = [    
+         'research'
     ]
+#    research_keywords = [
+#        'research',
+#        'user testing',
+#        'user research',
+#        'tested with',
+#        'feedback from users',
+#        'case study',
+#        'Examples'
+#    ]
 
     content_lower = content.lower()
     return any(keyword.lower() in content_lower for keyword in research_keywords)
@@ -189,7 +192,7 @@ def parse_component_markdown(file_path: str) -> Dict[str, Any]:
     # Build the JSON structure
     result = {
         "filecontent": content,
-        "components": [{
+        "component": {
             "title": title,
             "url": url,
             "description": description,
@@ -198,11 +201,21 @@ def parse_component_markdown(file_path: str) -> Dict[str, Any]:
             "created_at": created_at,
             "updated_at": updated_at,
             "has_research": has_research,
-            "views": 0,  # Default value as this is typically tracked separately
-            "status": frontmatter.get('status', 'Unknown'),
-            "statusDate": frontmatter.get('statusDate', ''),
-            "sections": extract_sections(content)
-        }]
+            "views": 0#,  # Default value as this is typically tracked separately
+            #"sections": extract_sections(content)
+        }
+#        "components": [{
+#            "title": title,
+#            "url": url,
+#            "description": description,
+#            "parent": parent,
+#            "accessibility": accessibility,
+#            "created_at": created_at,
+#            "updated_at": updated_at,
+#            "has_research": has_research,
+#            "views": 0#,  # Default value as this is typically tracked separately
+#            #"sections": extract_sections(content)
+#        }]        
     }
 
     return result
@@ -281,16 +294,21 @@ def main():
         output_path = Path(args.output)
         output_path.write_text(json_output, encoding='utf-8')
         print(f"✅ JSON output written to: {args.output}")
-        print(f"📊 Component: {result['components'][0]['title']}")
-        print(f"📝 Description: {result['components'][0]['description'][:80]}...")
-        print(f"🔗 URL: {result['components'][0]['url']}")
+#        print(f"📊 Component: {result['components'][0]['title']}")
+#        print(f"📝 Description: {result['components'][0]['description'][:80]}...")
+#        print(f"🔗 URL: {result['components'][0]['url']}")
+        print(f"📊 Component: {result['component']['title']}")
+        print(f"📝 Description: {result['component']['description'][:80]}...")
+        print(f"🔗 URL: {result['component']['url']}")
+
     else:
         print("\n" + "="*80)
         print("JSON OUTPUT:")
         print("="*80)
         print(json_output)
 
-    print(f"\n✅ Successfully parsed component: {result['components'][0]['title']}")
+#    print(f"\n✅ Successfully parsed component: {result['components'][0]['title']}")
+    print(f"\n✅ Successfully parsed component: {result['component']['title']}")
 
 
 if __name__ == "__main__":
