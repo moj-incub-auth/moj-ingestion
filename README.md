@@ -47,7 +47,7 @@ docker-compose down
 
 ```bash
 ### Install all requirements
-pip install -r requirements.txt
+uv sync
 ```
 
 ## Retrieve repository
@@ -59,7 +59,7 @@ pip install -r requirements.txt
 
 
 ```bash
-python download_git_repo.py --depth 1
+uv run download_git_repo.py --depth 1
 ```
 
 ## Concatenate all files for a component
