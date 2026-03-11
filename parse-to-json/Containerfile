@@ -6,6 +6,12 @@ LABEL description="Parse Markdown to JSON Task - Parse component markdown files 
 # Set working directory
 WORKDIR /workspace
 
+# Copy requirements first for better layer caching
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
 # Copy the parsing script
 # Note: This script uses only Python standard library, no external dependencies needed
 COPY parse_component_to_json.py .
