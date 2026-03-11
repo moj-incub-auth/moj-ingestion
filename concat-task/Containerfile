@@ -1,0 +1,32 @@
+FROM python:3.11-slim
+
+LABEL maintainer="MOJ Design System"
+LABEL description="Markdown Concatenation Task - Concatenate markdown files from directories"
+
+# Set working directory
+WORKDIR /workspace
+
+# Copy requirements first for better layer caching
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the concatenation script
+COPY concat-task.py .
+
+# Make script executable
+RUN chmod +x concat-task.py
+
+# Set environment variables with defaults
+ENV MD_SOURCE_DIR=/workspace/source
+ENV MD_OUTPUT_DIR=/workspace/output
+
+# Create default directories
+RUN mkdir -p /workspace/source /workspace/output
+
+# Set the entrypoint to the script
+ENTRYPOINT ["python", "concat-task.py"]
+
+# Default command: show help
+CMD ["--help"]
