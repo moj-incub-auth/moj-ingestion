@@ -1,0 +1,32 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: parse-to-json
+  labels:
+    app: parse-to-json
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: parse-to-json-build
+  labels:
+    app: parse-to-json
+spec:
+  source:
+    type: Git
+    git:
+      uri: "https://github.com/moj-incub-auth/moj-ingestion.git"
+      ref: "dev-stelios"
+    contextDir: "parse-to-json" 
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Containerfile 
+  output:
+    to:
+      kind: ImageStreamTag
+      # Adding the namespace explicitly helps resolve InvalidOutputReference
+      name: "parse-to-json:latest"
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange

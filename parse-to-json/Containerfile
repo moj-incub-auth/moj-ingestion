@@ -1,0 +1,26 @@
+FROM python:3.11-slim
+
+LABEL maintainer="MOJ Design System"
+LABEL description="Parse Markdown to JSON Task - Parse component markdown files to structured JSON"
+
+# Set working directory
+WORKDIR /workspace
+
+# Copy the parsing script
+# Note: This script uses only Python standard library, no external dependencies needed
+COPY parse_component_to_json.py .
+
+# Make script executable
+RUN chmod +x parse_component_to_json.py
+
+# Set environment variables with defaults
+ENV MD_OUTPUT_DIR=/workspace/data
+
+# Create default directory
+RUN mkdir -p /workspace/data
+
+# Set the entrypoint to the script
+ENTRYPOINT ["python", "parse_component_to_json.py"]
+
+# Default command: show help
+CMD ["--help"]
