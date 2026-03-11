@@ -1,4 +1,4 @@
-python 2_parse_component_to_json.py alert-combined.md -o alert-component.json --pretty
+uv run 2_parse_component_to_json.py alert-combined.md -o alert-component.json --pretty
 
  Let me also show you just the component metadata (without the full file content) for easier viewing:                                                                   
                                                                                                                                                                                                                  

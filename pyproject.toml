@@ -1,0 +1,20 @@
+[project]
+name = "moj-ingestion"
+version = "0.1.0"
+description = "Injestion tool"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "docling>=2.77.0",
+    "einops>=0.8.2",
+    # TODO: optional faiss-gpu based on the system type
+    # https://github.com/facebookresearch/faiss/blob/main/INSTALL.md#installing-faiss-via-conda
+    "faiss-cpu>=1.13.2",
+    "langchain>=1.2.10",
+    "langchain-community>=0.4.1",
+    "langchain-core>=1.2.18",
+    "langchain-text-splitters>=1.1.1",
+    "numpy>=2.4.3",
+    "pymilvus>=2.6.9",
+    "sentence-transformers>=5.2.3",
+]

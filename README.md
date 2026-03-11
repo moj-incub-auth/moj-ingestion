@@ -25,10 +25,7 @@
 
 ```bash
 # Install all requirements
-pip install -r requirements-milvus.txt
-
-# Or install individually
-pip install pymilvus sentence-transformers numpy einops
+uv sync
 ```
 
 * Start Milvus
@@ -73,7 +70,7 @@ python download_git_repo.py --depth 1
 | `MD_OUTPUT_DIR` | Output directory for batch processing | `export MD_OUTPUT_DIR="/tmp/moj-frontend/combined-output"` |
 
 ```bash
-python 1_concat_markdown.py --batch --recursive
+uv run 1_concat_markdown.py --batch --recursive
 ```
 
 For more option see [README-CONCAT_MARKDOWN.md](docs/README-CONCAT_MARKDOWN.md)
@@ -85,7 +82,7 @@ For more option see [README-CONCAT_MARKDOWN.md](docs/README-CONCAT_MARKDOWN.md)
 | `MD_OUTPUT_DIR` | Output directory for batch processing | `export MD_OUTPUT_DIR="/tmp/moj-frontend/combined-output"` |
 
 ```bash
-python 2_parse_component_to_json.py --batch
+uv run 2_parse_component_to_json.py --batch
 ```
 
 For more option see [README_PARSE_COMPONENT_TO_JSON.md](docs/README_PARSE_COMPONENT_TO_JSON.md)
@@ -106,15 +103,15 @@ For more option see [README_PARSE_COMPONENT_TO_JSON.md](docs/README_PARSE_COMPON
 
 | Milvus Location | Command | 
 |----------|-------------|
-| Local | `python 3_insert_to_milvus.py --create --collection=knowledge_base` |
-| Remote | `python 3_insert_to_milvus.py --drop --create --host=<ROUTE> --port=19530 --collection=knowledge_base` |
+| Local | `uv run 3_insert_to_milvus.py --create --collection=knowledge_base` |
+| Remote | `uv run 3_insert_to_milvus.py --drop --create --host=<ROUTE> --port=19530 --collection=knowledge_base` |
 
 2. To drop and recreate an existing collection:
 
 | Milvus Location | Command | 
 |----------|-------------|
-| Local | `python 3_insert_to_milvus.py --drop --create --collection=knowledge_base` |
-| Remote | `python 3_insert_to_milvus.py --drop --create --host=<ROUTE> --port=19530 --collection=knowledge_base` |
+| Local | `uv run 3_insert_to_milvus.py --drop --create --collection=knowledge_base` |
+| Remote | `uv run 3_insert_to_milvus.py --drop --create --host=<ROUTE> --port=19530 --collection=knowledge_base` |
 
 
 3. Insert your parsed component JSON into the collection:
@@ -122,18 +119,18 @@ For more option see [README_PARSE_COMPONENT_TO_JSON.md](docs/README_PARSE_COMPON
 
 | Milvus Location | Command | 
 |----------|-------------|
-| Local | `python 3_insert_to_milvus.py --batch --collection=knowledge_base` |
-| Remote | `python 3_insert_to_milvus.py --batch --host=<ROUTE> --port=19530 --collection=knowledge_base` |
+| Local | `uv run 3_insert_to_milvus.py --batch --collection=knowledge_base` |
+| Remote | `uv run 3_insert_to_milvus.py --batch --host=<ROUTE> --port=19530 --collection=knowledge_base` |
 
 
 4. Perform similarity check
 
 ```bash
-python 3_insert_to_milvus.py --search "Do you have a component which can help with dates?"
+uv run 3_insert_to_milvus.py --search "Do you have a component which can help with dates?"
 ```
 
 ```bash
-python 3_insert_to_milvus.py --search "Show me components that have research done"
+uv run 3_insert_to_milvus.py --search "Show me components that have research done"
 ```
 
 # Search API
