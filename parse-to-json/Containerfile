@@ -4,7 +4,7 @@ LABEL maintainer="MOJ Design System"
 LABEL description="Parse Markdown to JSON Task - Parse component markdown files to structured JSON"
 
 # Set working directory
-WORKDIR /workspace
+WORKDIR /app
 
 # Copy requirements first for better layer caching
 COPY requirements.txt .
