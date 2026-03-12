@@ -1,0 +1,32 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: concat-task
+  labels:
+    app: concat-task
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: concat-task-build
+  labels:
+    app: concat-task
+spec:
+  source:
+    type: Git
+    git:
+      uri: "https://github.com/moj-incub-auth/moj-ingestion.git"
+      ref: "dev-stelios"
+    contextDir: "concat-task" 
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Containerfile 
+  output:
+    to:
+      kind: ImageStreamTag
+      # Adding the namespace explicitly helps resolve InvalidOutputReference
+      name: "concat-task:latest"
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
