@@ -1,0 +1,12 @@
+# Milvus Vector Database
+pymilvus>=2.3.0
+
+# Embeddings (Nomic)
+sentence-transformers>=2.2.0
+
+# Additional dependencies
+numpy>=1.24.0
+
+
+#pip install einops
+einops>=0.8.2

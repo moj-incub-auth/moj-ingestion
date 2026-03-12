@@ -1,0 +1,37 @@
+FROM python:3.11-slim
+
+LABEL maintainer="MOJ Design System"
+LABEL description="Insert JSON to Milvus Task"
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements first for better layer caching
+COPY requirements-milvus.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements-milvus.txt
+
+# Copy the parsing script
+# Note: This script uses only Python standard library, no external dependencies needed
+COPY insert_to_milvus.py .
+
+# Make script executable
+RUN chmod +x insert_to_milvus.py
+
+# Set environment variables with defaults
+ENV MILVUS_HOST=localhost
+ENV MILVUS_PORT=19530
+ENV MILVUS_COLLECTION=knowledge_base
+ENV MILVUS_EMBEDDING_MODEL=/workspace/data
+ENV MD_OUTPUT_DIR=/workspace/data
+
+
+# Create default directory
+RUN mkdir -p /workspace/data
+
+# Set the entrypoint to the script
+ENTRYPOINT ["python", "insert_to_milvus.py"]
+
+# Default command: show help
+CMD ["--help"]

@@ -1,0 +1,31 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: moj-frontend-ingestion-pipeline-run- # Generates a unique name for every run
+spec:
+  pipelineRef:
+    name: ingestion-pipeline
+  # Providing values for the parameters defined in the Pipeline
+  params:
+    - name: GIT_REPO_URL
+      value: "https://github.com/ministryofjustice/moj-frontend.git"
+    - name: GIT_TARGET_DIR
+      value: "design-systems"
+    - name: MD_SOURCE_DIR
+      value: docs/components
+    - name: MD_OUTPUT_DIR
+      value: combined-output
+    - name: MILVUS_HOST
+      value: my-release-milvus.milvus.svc.cluster.local
+    - name: MILVUS_PORT
+      value: '19530'
+    - name: MILVUS_COLLECTION
+      value: knowledge_base
+    - name: MILVUS_EMBEDDING_MODEL
+      value: nomic-ai/nomic-embed-text-v1.5      
+    # Binding the Workspace to the PVC
+  workspaces:
+    - name: shared-data
+      persistentVolumeClaim:
+        claimName:  moj-frontent-shared-pvc

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: moj-search-api:latest
+        image: milvus/search-api:latest
         ports:
         - containerPort: 5000
         env:
@@ -43,9 +43,11 @@ kind: Service
 metadata:
   name: moj-search-api
 spec:
-  type: LoadBalancer
+  # Changed from LoadBalancer to ClusterIP
+  type: ClusterIP 
   ports:
   - port: 80
     targetPort: 5000
+    protocol: TCP
   selector:
     app: moj-search-api

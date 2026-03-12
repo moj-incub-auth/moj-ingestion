@@ -1,0 +1,197 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: ingestion-pipeline
+  namespace: milvus
+spec:
+  params:
+    - description: URL of the git repository
+      name: GIT_REPO_URL
+      type: string
+    - default: design-systems
+      description: Subdirectory within the workspace to clone into
+      name: GIT_TARGET_DIR
+      type: string
+    - default: docs/components
+      description: Path inside the repo containing .md files
+      name: MD_SOURCE_DIR
+      type: string
+    - default: combined-output
+      description: Path to save processed markdown
+      name: MD_OUTPUT_DIR
+      type: string
+    - name: MILVUS_HOST
+      type: string
+    - default: '19530'
+      name: MILVUS_PORT
+      type: string
+    - name: MILVUS_COLLECTION
+      type: string
+    - default: nomic-ai/nomic-embed-text-v1.5
+      name: MILVUS_EMBEDDING_MODEL
+      type: string
+  tasks:
+    - name: git-clone
+      params:
+        - name: URL
+          value: $(params.GIT_REPO_URL)
+        - name: SUBDIRECTORY
+          value: $(params.GIT_TARGET_DIR)
+      taskRef:
+        kind: Task
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: shared-data
+    - name: concat-markdown
+      runAfter:
+        - git-clone
+      taskSpec:
+        metadata: {}
+        spec: null
+        steps:
+          - computeResources: {}
+            env:
+              - name: MD_SOURCE_DIR
+                value: $(workspaces.source.path)/$(params.GIT_TARGET_DIR)/$(params.MD_SOURCE_DIR)
+              - name: MD_OUPUT_DIR
+                value: $(workspaces.source.path)/$(params.GIT_TARGET_DIR)/$(params.MD_OUTPUT_DIR)
+            image: alpine
+            name: concat
+            script: |
+              echo "v1"
+              echo "cloned directory $(workspaces.source.path)/$(params.GIT_TARGET_DIR)" 
+              echo "--------------------------------------"
+              ls -la $(workspaces.source.path)/$(params.GIT_TARGET_DIR)
+              echo "--------------------------------------"              
+              echo "mkdir -p $(workspaces.source.path)/$(params.MD_OUTPUT_DIR)" 
+              echo "--------------------------------------" 
+              ls $(workspaces.source.path)/$(params.GIT_TARGET_DIR)/$(params.MD_SOURCE_DIR)/alert/*.md 
+              echo "--------------------------------------"
+              echo "#########################"
+              echo "MD_SOURCE_DIR => $MD_SOURCE_DIR"
+              echo "MD_OUPUT_DIR => $MD_OUPUT_DIR"              
+              echo "### INPUT ######################"     
+              ls -la $MD_SOURCE_DIR
+              concat_markdown.py --batch --recursive
+              echo "### OUTPUT B4 ######################"     
+              echo "ls -la $MD_OUPUT_DIR"
+              echo "### OUTPUT AFTER ######################"     
+              ls -la $MD_OUPUT_DIR
+              echo "^^^^^^^^^^^^^^^^^^^^^^^^^"                                     
+              echo "Markdown concatenated successfully."
+              rm -rf $MD_OUPUT_DIR
+        workspaces:
+          - name: source
+      workspaces:
+        - name: source
+          workspace: shared-data
+    - name: parse-markdown-to-json
+      runAfter:
+        - concat-markdown
+      taskSpec:
+        metadata: {}
+        spec: null
+        steps:
+          - computeResources: {}
+            env:
+              - name: MD_OUPUT_DIR
+                value: $(workspaces.source.path)/$(params.MD_OUTPUT_DIR)
+            image: 'python:3.9-slim'
+            name: parse
+            script: |
+              echo "#########################"
+              echo "MD_OUPUT_DIR => $MD_OUPUT_DIR"              
+              echo "#########################"              
+              echo "Parsing of markdown to JSON successfully."
+        workspaces:
+          - name: source
+      workspaces:
+        - name: source
+          workspace: shared-data
+    - name: insert-milvus
+      params:
+        - name: milvus_host
+          value: $(params.MILVUS_HOST)
+        - name: milvus_port
+          value: $(params.MILVUS_PORT)
+        - name: milvus_collection
+          value: $(params.MILVUS_COLLECTION)
+        - name: model
+          value: $(params.MILVUS_EMBEDDING_MODEL)
+      runAfter:
+        - parse-markdown-to-json
+      taskSpec:
+        metadata: {}
+        spec: null
+        steps:
+          - computeResources: {}
+            env:
+              - name: MILVUS_HOST
+                value: $(params.MILVUS_HOST)
+              - name: MILVUS_PORT
+                value: $(params.MILVUS_PORT)
+              - name: MILVUS_COLLECTION
+                value: $(params.MILVUS_COLLECTION)
+              - name: MILVUS_EMBEDDING_MODEL
+                value: $(params.MILVUS_EMBEDDING_MODEL)
+              - name: MD_OUPUT_DIR
+                value: $(workspaces.source.path)/$(params.MD_OUTPUT_DIR)
+            image: 'python:3.9-slim'
+            name: insert
+            script: |
+              echo "Connecting to milvus with $MILVUS_HOST:$MILVUS_PORT " 
+              echo "Connecting to Milvus collection: [$MILVUS_COLLECTION] with embedding model: [$MILVUS_EMBEDDING_MODEL]"
+              echo "Inserting JSON from MD_OUPUT_DIR => $MD_OUPUT_DIR"
+              echo "Inserting JSON successfully."
+        workspaces:
+          - name: source
+      workspaces:
+        - name: source
+          workspace: shared-data
+  workspaces:
+    - description: This workspace stores the repo and intermediate files
+      name: shared-data
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tekton-shared-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce # Standard for single-node access; use ReadWriteMany if tasks run on different nodes
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: moj-frontend-ingestion-pipeline-run- # Generates a unique name for every run
+spec:
+  pipelineRef:
+    name: ingestion-pipeline
+  # Providing values for the parameters defined in the Pipeline
+  params:
+    - name: GIT_REPO_URL
+      value: "https://github.com/ministryofjustice/moj-frontend.git"
+    - name: GIT_TARGET_DIR
+      value: "design-systems"
+    - name: MD_SOURCE_DIR
+      value: docs/components
+    - name: MD_OUTPUT_DIR
+      value: combined-output
+    - name: MILVUS_HOST
+      value: my-release-milvus.milvus.svc.cluster.local
+    - name: MILVUS_PORT
+      value: '19530'
+    - name: MILVUS_COLLECTION
+      value: knowledge_base
+    - name: MILVUS_EMBEDDING_MODEL
+      value: nomic-ai/nomic-embed-text-v1.5      
+    # Binding the Workspace to the PVC
+  workspaces:
+    - name: shared-data
+      persistentVolumeClaim:
+        claimName:  moj-frontent-shared-pvc

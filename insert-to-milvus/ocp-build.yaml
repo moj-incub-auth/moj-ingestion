@@ -1,0 +1,32 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: insert-to-milvus
+  labels:
+    app: insert-to-milvus
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: insert-to-milvus-build
+  labels:
+    app: insert-to-milvus
+spec:
+  source:
+    type: Git
+    git:
+      uri: "https://github.com/moj-incub-auth/moj-ingestion.git"
+      ref: "dev-stelios"
+    contextDir: "insert-to-milvus" 
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Containerfile 
+  output:
+    to:
+      kind: ImageStreamTag
+      # Adding the namespace explicitly helps resolve InvalidOutputReference
+      name: "insert-to-milvus:latest"
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
