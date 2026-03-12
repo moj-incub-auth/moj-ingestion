@@ -4,7 +4,7 @@ LABEL maintainer="MOJ Design System"
 LABEL description="Markdown Concatenation Task - Concatenate markdown files from directories"
 
 # Set working directory
-WORKDIR /workspace
+WORKDIR /opt
 
 # Copy requirements first for better layer caching
 COPY requirements.txt .
