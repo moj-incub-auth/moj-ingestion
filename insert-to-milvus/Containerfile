@@ -31,7 +31,7 @@ ENV MD_OUTPUT_DIR=/workspace/data
 RUN mkdir -p /workspace/data
 
 # Set the entrypoint to the script
-ENTRYPOINT ["python", "parse_component_to_json.py"]
+ENTRYPOINT ["python", "insert_to_milvus.py"]
 
 # Default command: show help
 CMD ["--help"]
