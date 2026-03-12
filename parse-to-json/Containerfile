@@ -20,7 +20,7 @@ COPY parse_component_to_json.py .
 RUN chmod +x parse_component_to_json.py
 
 # Set environment variables with defaults
-ENV MD_OUTPUT_DIR=/workspace/data
+#ENV MD_OUTPUT_DIR=/workspace/data
 
 # Create default directory
 RUN mkdir -p /workspace/data
