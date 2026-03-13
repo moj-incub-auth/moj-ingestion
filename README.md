@@ -47,11 +47,7 @@ docker-compose down
 
 ```bash
 ### Install all requirements
-<<<<<<< HEAD
 uv sync
-=======
-pip install -r requirements.txt
->>>>>>> dev-stelios
 ```
 
 ## Retrieve repository
@@ -63,11 +59,7 @@ pip install -r requirements.txt
 
 
 ```bash
-<<<<<<< HEAD
 uv run download_git_repo.py --depth 1
-=======
-python download_git_repo.py --depth 1
->>>>>>> dev-stelios
 ```
 
 ## Concatenate all files for a component
@@ -78,11 +70,7 @@ python download_git_repo.py --depth 1
 | `MD_OUTPUT_DIR` | Output directory for batch processing | `export MD_OUTPUT_DIR="/tmp/moj-frontend/combined-output"` |
 
 ```bash
-<<<<<<< HEAD
 uv run 1_concat_markdown.py --batch --recursive
-=======
-python 1_concat_markdown.py --batch --recursive
->>>>>>> dev-stelios
 ```
 
 For more option see [README-CONCAT_MARKDOWN.md](docs/README-CONCAT_MARKDOWN.md)
@@ -94,11 +82,7 @@ For more option see [README-CONCAT_MARKDOWN.md](docs/README-CONCAT_MARKDOWN.md)
 | `MD_OUTPUT_DIR` | Output directory for batch processing | `export MD_OUTPUT_DIR="/tmp/moj-frontend/combined-output"` |
 
 ```bash
-<<<<<<< HEAD
 uv run 2_parse_component_to_json.py --batch
-=======
-python 2_parse_component_to_json.py --batch
->>>>>>> dev-stelios
 ```
 
 For more option see [README_PARSE_COMPONENT_TO_JSON.md](docs/README_PARSE_COMPONENT_TO_JSON.md)
@@ -119,25 +103,15 @@ For more option see [README_PARSE_COMPONENT_TO_JSON.md](docs/README_PARSE_COMPON
 
 | Milvus Location | Command | 
 |----------|-------------|
-<<<<<<< HEAD
 | Local | `uv run 3_insert_to_milvus.py --create --collection=knowledge_base` |
 | Remote | `uv run 3_insert_to_milvus.py --drop --create --host=<ROUTE> --port=19530 --collection=knowledge_base` |
-=======
-| Local | `python 3_insert_to_milvus.py --create --collection=knowledge_base` |
-| Remote | `python 3_insert_to_milvus.py --drop --create --host=<ROUTE> --port=19530 --collection=knowledge_base` |
->>>>>>> dev-stelios
 
 2. To drop and recreate an existing collection:
 
 | Milvus Location | Command | 
 |----------|-------------|
-<<<<<<< HEAD
 | Local | `uv run 3_insert_to_milvus.py --drop --create --collection=knowledge_base` |
 | Remote | `uv run 3_insert_to_milvus.py --drop --create --host=<ROUTE> --port=19530 --collection=knowledge_base` |
-=======
-| Local | `python 3_insert_to_milvus.py --drop --create --collection=knowledge_base` |
-| Remote | `python 3_insert_to_milvus.py --drop --create --host=<ROUTE> --port=19530 --collection=knowledge_base` |
->>>>>>> dev-stelios
 
 
 3. Insert your parsed component JSON into the collection:
@@ -145,13 +119,8 @@ For more option see [README_PARSE_COMPONENT_TO_JSON.md](docs/README_PARSE_COMPON
 
 | Milvus Location | Command | 
 |----------|-------------|
-<<<<<<< HEAD
 | Local | `uv run 3_insert_to_milvus.py --batch --collection=knowledge_base` |
 | Remote | `uv run 3_insert_to_milvus.py --batch --host=<ROUTE> --port=19530 --collection=knowledge_base` |
-=======
-| Local | `python 3_insert_to_milvus.py --batch --collection=knowledge_base` |
-| Remote | `python 3_insert_to_milvus.py --batch --host=<ROUTE> --port=19530 --collection=knowledge_base` |
->>>>>>> dev-stelios
 
 
 4. Perform similarity check
@@ -161,11 +130,7 @@ uv run 3_insert_to_milvus.py --search "Do you have a component which can help wi
 ```
 
 ```bash
-<<<<<<< HEAD
 uv run 3_insert_to_milvus.py --search "Show me components that have research done"
-=======
-python 3_insert_to_milvus.py --search "Show me components that have research done"
->>>>>>> dev-stelios
 ```
 
 # Search API
