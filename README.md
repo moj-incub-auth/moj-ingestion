@@ -1,3 +1,9 @@
+# ARCHIVED
+
+> [!CAUTION] 
+> Do not use to recreate the applications. This has been superseeded by [https://github.com/moj-incub-auth/moj-vector-data](https://github.com/moj-incub-auth/moj-vector-data)
+
+
 # moj-ingestion
 
 # milvus schema
